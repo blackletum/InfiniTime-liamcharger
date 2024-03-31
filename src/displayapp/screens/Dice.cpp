@@ -103,9 +103,6 @@ Dice::Dice(Controllers::MotionController& motionController,
                                     0,
                                     10);
 
-  Roll();
-  openingRoll = false;
-
   btnRoll = lv_btn_create(lv_scr_act(), nullptr);
   btnRoll->user_data = this;
   lv_obj_set_event_cb(btnRoll, btnRollEventHandler);
@@ -117,41 +114,15 @@ Dice::Dice(Controllers::MotionController& motionController,
                            LV_LABEL_LONG_EXPAND,
                            0,
                            LV_LABEL_ALIGN_CENTER,
-                           Symbols::dice,
+                           "Roll",
                            btnRoll,
                            LV_ALIGN_CENTER,
                            0,
                            0);
-
-  // Spagetti code in motion controller: it only updates the shake speed when shake to wake is on...
-  enableShakeForDice = !settingsController.isWakeUpModeOn(Pinetime::Controllers::Settings::WakeUpMode::Shake);
-  if (enableShakeForDice) {
-    settingsController.setWakeUpMode(Pinetime::Controllers::Settings::WakeUpMode::Shake, true);
-  }
-  refreshTask = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
 }
 
 Dice::~Dice() {
-  // reset the shake to wake mode.
-  if (enableShakeForDice) {
-    settingsController.setWakeUpMode(Pinetime::Controllers::Settings::WakeUpMode::Shake, false);
-    enableShakeForDice = false;
-  }
-  lv_task_del(refreshTask);
   lv_obj_clean(lv_scr_act());
-}
-
-void Dice::Refresh() {
-  // we only reset the hysteresis when at rest
-  if (motionController.CurrentShakeSpeed() >= settingsController.GetShakeThreshold()) {
-    if (currentRollHysteresis <= 0) {
-      // this timestamp is used for the screen timeout
-      lv_disp_get_next(NULL)->last_activity_time = lv_tick_get();
-
-      Roll();
-    }
-  } else if (currentRollHysteresis > 0)
-    --currentRollHysteresis;
 }
 
 void Dice::Roll() {
@@ -185,11 +156,9 @@ void Dice::Roll() {
   }
 
   lv_label_set_text_fmt(resultTotalLabel, "%d", resultTotal);
-  if (openingRoll == false) {
-    motorController.RunForDuration(30);
-    NextColor();
-    currentRollHysteresis = rollHysteresis;
-  }
+  motorController.RunForDuration(30);
+  NextColor();
+  currentRollHysteresis = rollHysteresis;
 }
 
 void Dice::NextColor() {

@@ -19,14 +19,12 @@ namespace Pinetime {
              Controllers::Settings& settingsController);
         ~Dice() override;
         void Roll();
-        void Refresh() override;
 
       private:
         lv_obj_t* btnRoll;
         lv_obj_t* btnRollLabel;
         lv_obj_t* resultTotalLabel;
         lv_obj_t* resultIndividualLabel;
-        lv_task_t* refreshTask;
         bool enableShakeForDice = false;
 
         std::mt19937 gen;
@@ -38,7 +36,6 @@ namespace Pinetime {
         Widgets::Counter nCounter = Widgets::Counter(1, 9, jetbrains_mono_42);
         Widgets::Counter dCounter = Widgets::Counter(2, 99, jetbrains_mono_42);
 
-        bool openingRoll = true;
         uint8_t currentRollHysteresis = 0;
         static constexpr uint8_t rollHysteresis = 10;
 
